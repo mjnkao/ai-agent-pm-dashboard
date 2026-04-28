@@ -35,6 +35,11 @@ Use a dedicated bearer token from the private token handoff. Do not commit real 
 
 See [docs/aicos-pub-mcp.md](docs/aicos-pub-mcp.md).
 
+Strategy and automation notes:
+
+- [docs/strategy/agents-dashboard-cto-plan.md](docs/strategy/agents-dashboard-cto-plan.md)
+- [docs/operations/overnight-automation.md](docs/operations/overnight-automation.md)
+
 ## Project Structure
 
 ```text
