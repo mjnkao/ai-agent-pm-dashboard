@@ -1,6 +1,11 @@
-import { Activity, AlertTriangle, Bot, GitBranch, ShieldCheck } from "lucide-react";
+import { Activity, AlertTriangle, Bot, GitBranch, RefreshCw, ShieldCheck } from "lucide-react";
 import { dashboardSnapshot } from "../data/dashboard";
-import type { AgentWorkstream, WorkStatus } from "../data/types";
+import type { AgentWorkstream, DashboardSnapshot, WorkStatus } from "../data/types";
+import { useAicosData } from "../hooks/useAicosData";
+
+const SCOPE = "projects/agents-dashboard";
+
+// ── Status labels / classes ───────────────────────────────────────────────────
 
 const statusLabel: Record<WorkStatus, string> = {
   ready: "Ready",
@@ -13,6 +18,8 @@ const statusLabel: Record<WorkStatus, string> = {
 function statusClass(status: WorkStatus) {
   return `status status-${status}`;
 }
+
+// ── Sub-components ────────────────────────────────────────────────────────────
 
 function WorkstreamCard({ item }: { item: AgentWorkstream }) {
   return (
@@ -37,10 +44,70 @@ function WorkstreamCard({ item }: { item: AgentWorkstream }) {
   );
 }
 
-export function Dashboard() {
-  const snapshot = dashboardSnapshot;
-  const activeCount = snapshot.workstreams.filter((item) => item.status === "active").length;
-  const readyCount = snapshot.workstreams.filter((item) => item.status === "ready").length;
+function LoadingOverlay() {
+  return (
+    <div className="data-state">
+      <RefreshCw size={22} className="spin" />
+      <span>Loading AICOS context…</span>
+    </div>
+  );
+}
+
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <div className="data-state data-state-error">
+      <AlertTriangle size={18} />
+      <span>AICOS unavailable — showing cached snapshot. ({message})</span>
+    </div>
+  );
+}
+
+function DataSourceBadge({ live }: { live: boolean }) {
+  return (
+    <span className={`source-badge ${live ? "source-live" : "source-mock"}`}>
+      {live ? "● live" : "○ mock"}
+    </span>
+  );
+}
+
+function HandoffSection({ title, content }: { title: string; content: string }) {
+  // Show only the first meaningful paragraph (skip the H1 line)
+  const lines = content
+    .split("\n")
+    .filter((l) => !l.startsWith("# ") && l.trim() !== "");
+  const preview = lines.slice(0, 6).join(" ").slice(0, 420);
+
+  return (
+    <section className="handoff-section">
+      <div className="section-heading">
+        <p>AICOS</p>
+        <h2>{title}</h2>
+      </div>
+      <p className="handoff-preview">{preview}{preview.length >= 420 ? "…" : ""}</p>
+    </section>
+  );
+}
+
+// ── Main dashboard ────────────────────────────────────────────────────────────
+
+interface DashboardBodyProps {
+  snapshot: DashboardSnapshot;
+  handoffTitle?: string;
+  handoffContent?: string;
+  activeCount: number;
+  blockedCount: number;
+  live: boolean;
+}
+
+function DashboardBody({
+  snapshot,
+  handoffTitle,
+  handoffContent,
+  activeCount,
+  blockedCount,
+  live,
+}: DashboardBodyProps) {
+  const readyCount = snapshot.workstreams.filter((i) => i.status === "ready").length;
 
   return (
     <main className="dashboard-shell">
@@ -54,7 +121,9 @@ export function Dashboard() {
         </div>
         <div className="hero-panel">
           <span>Retrieval mode</span>
-          <strong>{snapshot.retrievalMode}</strong>
+          <strong>
+            {snapshot.retrievalMode} <DataSourceBadge live={live} />
+          </strong>
           <small>AICOS public context is the source of truth for agent handoff state.</small>
         </div>
       </section>
@@ -72,8 +141,8 @@ export function Dashboard() {
         </div>
         <div className="metric">
           <AlertTriangle />
-          <span>Open questions</span>
-          <strong>{snapshot.openQuestions.length}</strong>
+          <span>Blocked</span>
+          <strong>{blockedCount}</strong>
         </div>
         <div className="metric">
           <ShieldCheck />
@@ -82,33 +151,84 @@ export function Dashboard() {
         </div>
       </section>
 
+      {handoffTitle && handoffContent && (
+        <HandoffSection title={handoffTitle} content={handoffContent} />
+      )}
+
       <section className="section-grid">
         <div>
           <div className="section-heading">
             <p>Workstreams</p>
             <h2>Agent task lanes</h2>
           </div>
-          <div className="work-grid">
-            {snapshot.workstreams.map((item) => (
-              <WorkstreamCard key={item.id} item={item} />
-            ))}
-          </div>
+          {snapshot.workstreams.length === 0 ? (
+            <p className="empty-state">No active status items in AICOS for this scope.</p>
+          ) : (
+            <div className="work-grid">
+              {snapshot.workstreams.map((item) => (
+                <WorkstreamCard key={item.id} item={item} />
+              ))}
+            </div>
+          )}
         </div>
 
-        <aside className="questions">
-          <div className="section-heading">
-            <p>Decisions</p>
-            <h2>Open questions</h2>
-          </div>
-          {snapshot.openQuestions.map((item) => (
-            <article key={item.id} className="question-card">
-              <span>{item.owner}</span>
-              <h3>{item.question}</h3>
-              <p>{item.impact}</p>
-            </article>
-          ))}
-        </aside>
+        {snapshot.openQuestions.length > 0 && (
+          <aside className="questions">
+            <div className="section-heading">
+              <p>Decisions</p>
+              <h2>Open questions</h2>
+            </div>
+            {snapshot.openQuestions.map((item) => (
+              <article key={item.id} className="question-card">
+                <span>{item.owner}</span>
+                <h3>{item.question}</h3>
+                <p>{item.impact}</p>
+              </article>
+            ))}
+          </aside>
+        )}
       </section>
     </main>
+  );
+}
+
+// ── Root export ───────────────────────────────────────────────────────────────
+
+export function Dashboard() {
+  const state = useAicosData(SCOPE);
+
+  if (state.status === "loading") {
+    return (
+      <main className="dashboard-shell">
+        <LoadingOverlay />
+      </main>
+    );
+  }
+
+  if (state.status === "error") {
+    // Fallback to mock data so dashboard is always usable
+    return (
+      <>
+        <ErrorBanner message={state.message} />
+        <DashboardBody
+          snapshot={dashboardSnapshot}
+          activeCount={dashboardSnapshot.workstreams.filter((i) => i.status === "active").length}
+          blockedCount={dashboardSnapshot.workstreams.filter((i) => i.status === "blocked").length}
+          live={false}
+        />
+      </>
+    );
+  }
+
+  const { data } = state;
+  return (
+    <DashboardBody
+      snapshot={data.snapshot}
+      handoffTitle={data.handoffTitle}
+      handoffContent={data.handoffContent}
+      activeCount={data.activeCount}
+      blockedCount={data.blockedCount}
+      live={true}
+    />
   );
 }

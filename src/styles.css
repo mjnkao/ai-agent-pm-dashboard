@@ -259,6 +259,80 @@ h1 {
   color: #d7dfcf;
 }
 
+/* ── Data state ─────────────────────────────────────────────────────────────── */
+
+.data-state {
+  align-items: center;
+  background: rgba(255, 252, 235, 0.78);
+  border: 1px solid rgba(16, 39, 36, 0.12);
+  border-radius: 16px;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding: 14px 20px;
+}
+
+.data-state-error {
+  background: #fff1ee;
+  border-color: #f5c4bb;
+  color: #a9341d;
+}
+
+.spin {
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Source badge ────────────────────────────────────────────────────────────── */
+
+.source-badge {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.source-live {
+  background: #dff3df;
+  color: #1e6c37;
+}
+
+.source-mock {
+  background: #fff0c9;
+  color: #9a5a00;
+}
+
+/* ── Handoff section ─────────────────────────────────────────────────────────── */
+
+.handoff-section {
+  margin-bottom: 32px;
+}
+
+.handoff-preview {
+  background: rgba(255, 252, 235, 0.78);
+  border: 1px solid rgba(16, 39, 36, 0.12);
+  border-left: 4px solid #1b706e;
+  border-radius: 16px;
+  color: #3d4f49;
+  line-height: 1.65;
+  max-width: 860px;
+  padding: 20px 24px;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────────── */
+
+.empty-state {
+  color: #7a8a82;
+  font-size: 1rem;
+  padding: 12px 0;
+}
+
 @media (max-width: 900px) {
   .hero,
   .section-grid,
