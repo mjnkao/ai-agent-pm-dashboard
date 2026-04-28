@@ -1,0 +1,14 @@
+.DS_Store
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+
+.claude/
+.codex/
+.runtime-home/
+
+*.log
