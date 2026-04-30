@@ -45,6 +45,15 @@ contains all of these sections:
 - Execution Plan
 - CTO Verdict
 
+Also make sure the overnight automation document contains these sections:
+
+- Goal
+- Deliverables Checked By The Cron Loop
+- How The Loop Works
+- Safety Notes
+- Runtime Environment
+- Scheduler Note
+
 Stop conditions:
 
 1. If the repo contains conflicting unrelated user edits in the same file, do not

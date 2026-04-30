@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}"
+
 REPO="/Users/minh/Projects/agents-pm-dashboard"
 PROMPT_FILE="$REPO/automation/agents-dashboard-overnight.prompt.md"
 LOG_DIR="$REPO/.logs"
@@ -28,6 +30,15 @@ required_sections=(
   "## CTO Verdict"
 )
 
+required_operations_sections=(
+  "## Goal"
+  "## Deliverables Checked By The Cron Loop"
+  "## How The Loop Works"
+  "## Safety Notes"
+  "## Runtime Environment"
+  "## Scheduler Note"
+)
+
 needs_work=0
 
 for path in "${required_files[@]}"; do
@@ -39,6 +50,14 @@ done
 if [[ -f "$REPO/docs/strategy/agents-dashboard-cto-plan.md" ]]; then
   for section in "${required_sections[@]}"; do
     if ! grep -Fq "$section" "$REPO/docs/strategy/agents-dashboard-cto-plan.md"; then
+      needs_work=1
+    fi
+  done
+fi
+
+if [[ -f "$REPO/docs/operations/overnight-automation.md" ]]; then
+  for section in "${required_operations_sections[@]}"; do
+    if ! grep -Fq "$section" "$REPO/docs/operations/overnight-automation.md"; then
       needs_work=1
     fi
   done

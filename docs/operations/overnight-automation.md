@@ -35,6 +35,17 @@ push to git, and write project context back to AICOS.
 4. The prompt explicitly tells the agent not to overwrite unrelated user changes.
 5. Real bearer tokens must remain outside git and outside browser bundles.
 
+## Runtime Environment
+
+The scheduler must run the script with a PATH that can resolve system tools,
+git, and the Codex CLI. A minimal macOS-safe PATH is:
+
+`/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`
+
+Keep the PATH setup in the scheduler or script entrypoint, not inside the Codex
+prompt. The prompt should describe the work contract; the shell entrypoint should
+own host execution details.
+
 ## Scheduler Note
 
 This repo is prepared for cron-style execution every 2 hours, but on this macOS
