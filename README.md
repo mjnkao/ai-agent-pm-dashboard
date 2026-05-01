@@ -1,10 +1,11 @@
 # AI Agent PM Dashboard
 
-AI Agent PM Dashboard is a lightweight project-management dashboard for AI agent work. It is designed to sit beside `aicos-pub` and help a community see what agents are doing, what is blocked, which decisions are open, and which AICOS context should be read before continuing.
+AI Agent PM Dashboard is a lightweight project-management dashboard for AI agent work. It connects to `aicos-ra` (AICOS private Railway runtime) and helps a team see what agents are doing, what is blocked, which decisions are open, and which AICOS context should be read before continuing.
 
 ## Goals
 
 - Show active AI agent workstreams, owners, status, risk, and next actions.
+- Make it obvious which agents worked on the project, what they did, when they did it, and how far they got.
 - Link PM dashboard items back to AICOS MCP scopes, packets, handoffs, and open questions.
 - Provide templates that agents can fill consistently.
 - Keep secrets out of git while making remote MCP setup repeatable.
@@ -25,19 +26,23 @@ http://localhost:5173
 
 ## AICOS MCP
 
-Default endpoint:
+Runtime: `aicos-ra` — AICOS private Railway MCP.
 
 ```text
-https://aicos-pub-production.up.railway.app/mcp
+https://aicos-core-production-0da9.up.railway.app/mcp
 ```
 
-Use a dedicated bearer token from the private token handoff. Do not commit real tokens.
+Scope: `projects/agents-dashboard`. Use token `a1-local-03-claude` (or another A1 token) from the private handoff file. Do not commit real tokens.
 
-See [docs/aicos-pub-mcp.md](docs/aicos-pub-mcp.md).
+> **Deprecated:** `aicos-pub` (`aicos-pub-production.up.railway.app`) is no longer used by this project.
+
+See [docs/aicos-ra-mcp.md](docs/aicos-ra-mcp.md).
 
 Strategy and automation notes:
 
 - [docs/strategy/agents-dashboard-cto-plan.md](docs/strategy/agents-dashboard-cto-plan.md)
+- [docs/strategy/mvp-agent-activity-visibility-proposal-20260429.md](docs/strategy/mvp-agent-activity-visibility-proposal-20260429.md)
+- [docs/strategy/ai-team-operating-system-cto-architecture-proposal-20260429.md](docs/strategy/ai-team-operating-system-cto-architecture-proposal-20260429.md)
 - [docs/operations/overnight-automation.md](docs/operations/overnight-automation.md)
 
 ## Project Structure

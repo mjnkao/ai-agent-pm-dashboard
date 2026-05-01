@@ -87,7 +87,7 @@ export function mapAicosData(
         : health.summary.active_status_item_count > 0
           ? "yellow"
           : "green",
-    retrievalMode: "aicos-pub: postgresql_hybrid + pgvector + embeddings",
+    retrievalMode: "aicos-ra: postgresql_hybrid + pgvector + embeddings",
     workstreams,
     openQuestions: [],
   };
