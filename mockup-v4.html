@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Workspace — agents.ws v4.5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #09090b;
+  --bg1: #111113;
+  --bg2: #18181b;
+  --bg3: #1c1c1f;
+  --bg4: #27272a;
+  --border: #2e2e33;
+  --border2: #3f3f46;
+  --text: #fafafa;
+  --text2: #a1a1aa;
+  --text3: #71717a;
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --green: #22c55e;
+  --green-bg: #14532d22;
+  --amber: #f59e0b;
+  --amber-bg: #78350f22;
+  --red: #ef4444;
+  --red-bg: #7f1d1d22;
+  --blue: #3b82f6;
+  --blue-bg: #1e3a5f22;
+  --purple: #a855f7;
+  --purple-bg: #3b0764 22;
+  --cyan: #06b6d4;
+
+  /* Autonomy zones */
+  --zone-auto: #22c55e;
+  --zone-auto-bg: rgba(34,197,94,0.08);
+  --zone-auto-border: rgba(34,197,94,0.25);
+  --zone-sup: #f59e0b;
+  --zone-sup-bg: rgba(245,158,11,0.08);
+  --zone-sup-border: rgba(245,158,11,0.25);
+  --zone-gate: #ef4444;
+  --zone-gate-bg: rgba(239,68,68,0.08);
+  --zone-gate-border: rgba(239,68,68,0.25);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; font-size: 13px; }
+.mono { font-family: 'DM Mono', monospace; }
+
+/* ── Scrollbars ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ── Layout ── */
+.app { display: flex; flex: 1; overflow: hidden; }
+.sidebar { width: 220px; background: var(--bg1); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.right-panel { width: 380px; background: var(--bg1); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+
+/* ── Topbar ── */
+.topbar { height: 48px; background: var(--bg1); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; padding: 0 16px; flex-shrink: 0; }
+.topbar-brand { font-weight: 700; font-size: 14px; color: var(--text); letter-spacing: -0.3px; }
+.topbar-brand span { color: var(--accent2); }
+.topbar-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.project-filter { display: flex; align-items: center; gap: 6px; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 12px; color: var(--text2); }
+.project-filter:hover { border-color: var(--border2); color: var(--text); }
+.project-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.view-tabs { display: flex; gap: 2px; margin-left: auto; }
+.view-tab { padding: 5px 12px; border-radius: 5px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--text3); transition: all 0.15s; border: none; background: none; }
+.view-tab:hover { color: var(--text2); background: var(--bg3); }
+.view-tab.active { color: var(--text); background: var(--bg4); }
+.btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+.btn-ghost:hover { color: var(--text); border-color: var(--border2); background: var(--bg3); }
+.btn-sm { padding: 4px 9px; font-size: 11px; }
+
+/* ── Sidebar ── */
+.sidebar-logo { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.logo-hex { width: 28px; height: 28px; background: var(--accent); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.logo-text { font-weight: 700; font-size: 13px; }
+.logo-text small { display: block; font-size: 10px; color: var(--text3); font-weight: 400; }
+.sidebar-section { padding: 12px 8px 6px; }
+.sidebar-label { font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; padding: 0 8px 6px; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; cursor: pointer; color: var(--text3); font-size: 12px; font-weight: 500; transition: all 0.15s; position: relative; }
+.nav-item:hover { color: var(--text2); background: var(--bg3); }
+.nav-item.active { color: var(--text); background: var(--bg4); }
+.nav-icon { font-size: 14px; width: 16px; text-align: center; }
+.nav-badge { margin-left: auto; background: var(--red); color: #fff; border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: 600; }
+.nav-badge.amber { background: var(--amber); color: #000; }
+
+/* Autonomy Budget */
+.autonomy-budget { margin: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+.budget-label { font-size: 10px; color: var(--text3); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.budget-bar { height: 6px; background: var(--bg4); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+.budget-fill { height: 100%; background: linear-gradient(90deg, var(--green) 0%, var(--amber) 75%, var(--red) 100%); width: 68%; border-radius: 3px; }
+.budget-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+.budget-pill { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+.budget-pill.auto { background: var(--zone-auto-bg); color: var(--zone-auto); border: 1px solid var(--zone-auto-border); }
+.budget-pill.sup { background: var(--zone-sup-bg); color: var(--zone-sup); border: 1px solid var(--zone-sup-border); }
+.budget-pill.gate { background: var(--zone-gate-bg); color: var(--zone-gate); border: 1px solid var(--zone-gate-border); }
+
+/* Control model */
+.control-model { margin: 4px 8px 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+.cm-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.cm-row:last-child { margin-bottom: 0; }
+.cm-label { font-size: 11px; color: var(--text3); }
+.cm-val { font-size: 11px; font-weight: 600; }
+.cm-val.on { color: var(--green); }
+.cm-val.off { color: var(--text3); }
+
+/* Agents online */
+.agent-pill { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 6px; margin-bottom: 2px; }
+.agent-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.agent-dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.agent-dot.busy { background: var(--amber); }
+.agent-name { font-size: 11px; color: var(--text2); flex: 1; }
+.agent-status { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+/* ── Stats Bar ── */
+.stats-bar { display: flex; align-items: center; gap: 6px; padding: 0 16px; height: 34px; background: var(--bg1); border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
+.stat-pill { display: flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg3); white-space: nowrap; cursor: default; transition: border-color 0.15s; }
+.stat-pill:hover { border-color: var(--border2); }
+.stat-pill-val { font-size: 12px; font-weight: 700; font-family: 'DM Mono', monospace; }
+.stat-pill-val.red { color: var(--red); }
+.stat-pill-val.amber { color: var(--amber); }
+.stat-pill-val.green { color: var(--green); }
+.stat-pill-val.blue { color: var(--blue); }
+.stat-pill-val.purple { color: var(--purple); }
+.stat-pill-label { font-size: 11px; color: var(--text3); }
+.stat-sep { width: 1px; height: 16px; background: var(--border); flex-shrink: 0; }
+
+/* ── Content Area ── */
+.content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.view { flex: 1; overflow: hidden; display: none; }
+.view.active { display: flex; }
+
+/* ── Board View ── */
+#view-board { flex-direction: column; overflow: hidden; }
+.board-scroll { flex: 1; overflow-x: auto; overflow-y: hidden; padding: 16px; display: flex; gap: 12px; }
+.board-column { width: 230px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+.col-header { padding: 10px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+.col-header.auto { background: var(--zone-auto-bg); border-bottom-color: var(--zone-auto-border); }
+.col-header.sup { background: var(--zone-sup-bg); border-bottom-color: var(--zone-sup-border); }
+.col-header.gate { background: var(--zone-gate-bg); border-bottom-color: var(--zone-gate-border); }
+.col-zone-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.col-zone-dot.auto { background: var(--zone-auto); box-shadow: 0 0 6px var(--zone-auto); }
+.col-zone-dot.sup { background: var(--zone-sup); }
+.col-zone-dot.gate { background: var(--zone-gate); box-shadow: 0 0 6px var(--zone-gate); }
+.col-title { font-size: 12px; font-weight: 600; flex: 1; }
+.col-count { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; background: var(--bg4); border-radius: 10px; padding: 1px 7px; }
+.col-body { flex: 1; overflow-y: auto; padding: 8px; background: var(--bg1); display: flex; flex-direction: column; gap: 6px; }
+.col-zone-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.col-zone-label.auto { color: var(--zone-auto); }
+.col-zone-label.sup { color: var(--zone-sup); }
+.col-zone-label.gate { color: var(--zone-gate); }
+
+/* Task Card */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; cursor: pointer; transition: all 0.15s; position: relative; }
+.card:hover { border-color: var(--border2); background: var(--bg3); transform: translateY(-1px); }
+.card.selected { border-color: var(--accent); background: rgba(99,102,241,0.06); }
+.card-top { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 6px; }
+.card-zone-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+.card-zone-dot.green { background: var(--zone-auto); box-shadow: 0 0 5px var(--zone-auto); }
+.card-zone-dot.yellow { background: var(--zone-sup); }
+.card-zone-dot.red { background: var(--zone-gate); box-shadow: 0 0 5px var(--zone-gate); }
+.card-title { font-size: 12px; font-weight: 500; line-height: 1.4; flex: 1; }
+.card-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px; }
+.badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-family: 'DM Mono', monospace; }
+.badge-p0 { background: rgba(239,68,68,0.15); color: var(--red); }
+.badge-p1 { background: rgba(245,158,11,0.15); color: var(--amber); }
+.badge-p2 { background: rgba(99,102,241,0.15); color: var(--accent2); }
+.badge-code { background: rgba(168,85,247,0.15); color: var(--purple); }
+.badge-design { background: rgba(6,182,212,0.15); color: var(--cyan); }
+.badge-research { background: rgba(34,197,94,0.15); color: var(--green); }
+.card-meta { display: flex; align-items: center; gap: 6px; }
+.card-worker { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; }
+.card-freshness { font-size: 10px; padding: 1px 6px; border-radius: 3px; font-weight: 500; }
+.fresh { background: rgba(34,197,94,0.12); color: var(--green); }
+.aging { background: rgba(245,158,11,0.12); color: var(--amber); }
+.stale { background: rgba(239,68,68,0.12); color: var(--red); }
+.working { background: rgba(99,102,241,0.12); color: var(--accent2); }
+.card-progress { height: 2px; background: var(--bg4); border-radius: 1px; margin-top: 8px; }
+.card-progress-fill { height: 100%; border-radius: 1px; background: var(--accent); }
+.card-blocked { display: flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 10px; color: var(--red); }
+
+/* ── Human Queue View ── */
+#view-queue { flex-direction: column; overflow: hidden; }
+.queue-header { padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg1); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.queue-title { font-size: 14px; font-weight: 600; }
+.queue-subtitle { font-size: 12px; color: var(--text3); }
+.queue-list { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+.queue-row { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; cursor: pointer; transition: all 0.15s; display: flex; gap: 12px; align-items: flex-start; }
+.queue-row:hover { border-color: var(--border2); }
+.queue-row.selected { border-color: var(--accent); }
+.queue-row.urgent { border-left: 3px solid var(--red); }
+.queue-left { flex: 1; }
+.queue-decision-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.queue-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.queue-tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+.queue-tag.gate { background: var(--zone-gate-bg); color: var(--zone-gate); border: 1px solid var(--zone-gate-border); }
+.queue-tag.sup { background: var(--zone-sup-bg); color: var(--zone-sup); border: 1px solid var(--zone-sup-border); }
+.queue-blocked { font-size: 11px; color: var(--text3); }
+.queue-blocked strong { color: var(--amber); }
+.queue-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.confidence-badge { font-size: 11px; font-weight: 700; font-family: 'DM Mono', monospace; padding: 3px 8px; border-radius: 5px; }
+.conf-high { background: rgba(34,197,94,0.15); color: var(--green); }
+.conf-med { background: rgba(245,158,11,0.15); color: var(--amber); }
+.conf-low { background: rgba(239,68,68,0.15); color: var(--red); }
+.queue-rec { font-size: 11px; color: var(--text3); text-align: right; max-width: 160px; }
+.queue-rec strong { color: var(--accent2); }
+
+/* ── Timeline View ── */
+#view-timeline { flex-direction: column; overflow: hidden; }
+.timeline-container { flex: 1; overflow: auto; padding: 16px; }
+.timeline-header { display: flex; align-items: center; gap: 0; margin-bottom: 12px; margin-left: 120px; }
+.tl-day { flex: 1; text-align: center; font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; border-right: 1px dashed var(--border); padding: 4px; }
+.swimlane { display: flex; align-items: center; margin-bottom: 4px; }
+.swimlane-label { width: 120px; font-size: 11px; color: var(--text3); flex-shrink: 0; padding-right: 12px; text-align: right; font-weight: 500; }
+.swimlane-track { flex: 1; height: 32px; background: var(--bg2); border-radius: 4px; position: relative; border: 1px solid var(--border); overflow: hidden; }
+.tl-block { position: absolute; top: 4px; height: 24px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 10px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: opacity 0.15s; }
+.tl-block:hover { opacity: 0.85; }
+.tl-human { background: rgba(239,68,68,0.25); color: var(--red); border: 1px solid rgba(239,68,68,0.4); }
+.tl-plan { background: rgba(99,102,241,0.25); color: var(--accent2); border: 1px solid rgba(99,102,241,0.4); }
+.tl-branch-a { background: rgba(34,197,94,0.25); color: var(--green); border: 1px solid rgba(34,197,94,0.4); }
+.tl-branch-b { background: rgba(6,182,212,0.25); color: var(--cyan); border: 1px solid rgba(6,182,212,0.4); }
+.tl-verify { background: rgba(245,158,11,0.25); color: var(--amber); border: 1px solid rgba(245,158,11,0.4); }
+.tl-done { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+
+/* ── Branches View ── */
+#view-branches { flex-direction: column; overflow: hidden; }
+.branches-list { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+.branch-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.branch-card.blocked { border-left: 3px solid var(--red); }
+.branch-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.branch-name { font-size: 13px; font-weight: 600; font-family: 'DM Mono', monospace; flex: 1; }
+.branch-status { font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+.bstatus-running { background: rgba(34,197,94,0.15); color: var(--green); }
+.bstatus-blocked { background: rgba(239,68,68,0.15); color: var(--red); }
+.bstatus-waiting { background: rgba(245,158,11,0.15); color: var(--amber); }
+.branch-meta { display: flex; gap: 16px; }
+.branch-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.branch-meta-label { font-size: 10px; color: var(--text3); }
+.branch-meta-val { font-size: 12px; font-weight: 600; font-family: 'DM Mono', monospace; }
+.blocked-by { margin-top: 8px; padding: 6px 10px; background: var(--zone-gate-bg); border: 1px solid var(--zone-gate-border); border-radius: 5px; font-size: 11px; color: var(--red); }
+
+/* ── Right Panel (2-tab) ── */
+.rp-toptabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; align-items: center; }
+.rp-toptab { flex: 1; padding: 10px 8px; text-align: center; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text3); border-bottom: 2px solid transparent; transition: all 0.15s; }
+.rp-toptab:hover { color: var(--text2); background: var(--bg3); }
+.rp-toptab.active { color: var(--text); border-bottom-color: var(--accent2); }
+.rp-close-btn { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 8px 12px; line-height: 1; flex-shrink: 0; }
+.rp-close-btn:hover { color: var(--text); }
+.rp-task-header { padding: 10px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg3); }
+.rp-task-title { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+.rp-task-sub { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; }
+.rp-subtabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.rp-subtab { flex: 1; padding: 7px 6px; text-align: center; font-size: 11px; font-weight: 600; cursor: pointer; color: var(--text3); border-bottom: 2px solid transparent; transition: all 0.15s; }
+.rp-subtab:hover { color: var(--text2); }
+.rp-subtab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+.rp-subtab-content { overflow-y: auto; padding: 12px; flex-shrink: 0; max-height: 240px; }
+.rp-disc { display: flex; flex-direction: column; flex: 1; overflow: hidden; border-top: 1px solid var(--border); }
+.rp-disc-label { padding: 6px 12px; font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; background: var(--bg3); border-bottom: 1px solid var(--border); flex-shrink: 0; display: flex; align-items: center; gap: 6px; }
+.rp-disc-feed { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.rp-disc-bottom { padding: 8px 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+.rp-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text3); gap: 8px; padding: 24px; text-align: center; }
+/* Chat tab */
+.rp-chat-banner { padding: 6px 12px; background: rgba(99,102,241,0.08); border-bottom: 1px solid rgba(99,102,241,0.18); font-size: 10px; color: var(--accent2); display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.rp-chat-feed { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.rp-chat-input { padding: 10px 12px; border-top: 1px solid var(--border); display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
+.rp-chat-input input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; padding: 6px 9px; color: var(--text); font-size: 12px; font-family: 'DM Sans', sans-serif; }
+.rp-chat-input input:focus { outline: none; border-color: var(--accent); }
+.panel-body { flex: 1; overflow-y: auto; padding: 14px; }
+.panel-section { margin-bottom: 14px; }
+.panel-section-title { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.rec-box { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+.rec-label { font-size: 10px; font-weight: 700; color: var(--green); text-transform: uppercase; margin-bottom: 4px; }
+.rec-text { font-size: 12px; line-height: 1.5; }
+.alt-item { display: flex; gap: 8px; padding: 8px 10px; background: var(--bg3); border-radius: 6px; margin-bottom: 6px; }
+.alt-letter { width: 20px; height: 20px; border-radius: 50%; background: var(--bg4); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+.alt-content { flex: 1; }
+.alt-title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.alt-desc { font-size: 11px; color: var(--text3); }
+.evidence-item { display: flex; gap: 8px; padding: 7px 10px; background: var(--bg3); border-radius: 6px; margin-bottom: 5px; border-left: 3px solid var(--accent); }
+.evidence-icon { color: var(--text3); font-size: 12px; }
+.evidence-text { font-size: 11px; flex: 1; }
+.evidence-text a { color: var(--accent2); text-decoration: none; }
+.evidence-source { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; margin-top: 2px; }
+
+/* Discussion / Chat */
+.chat-messages { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.chat-msg { display: flex; gap: 8px; }
+.chat-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+.avatar-ai { background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.3); }
+.avatar-human { background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.3); }
+.chat-bubble { flex: 1; }
+.chat-sender { font-size: 10px; font-weight: 600; color: var(--text3); margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
+.chat-sender .agent-tag { background: rgba(99,102,241,0.15); color: var(--accent2); border-radius: 3px; padding: 0px 5px; font-family: 'DM Mono', monospace; }
+.chat-text { font-size: 12px; line-height: 1.5; background: var(--bg3); border-radius: 8px; padding: 8px 10px; }
+.quick-prompts { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.quick-btn { font-size: 11px; padding: 5px 10px; background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; cursor: pointer; color: var(--text2); transition: all 0.15s; }
+.quick-btn:hover { border-color: var(--accent); color: var(--accent2); }
+.chat-input-wrap { display: flex; gap: 6px; }
+.chat-input { flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--text); font-size: 12px; font-family: 'DM Sans', sans-serif; resize: none; }
+.chat-input:focus { outline: none; border-color: var(--accent); }
+
+/* Decision actions */
+.decision-actions { display: flex; flex-direction: column; gap: 8px; }
+.decision-btn { width: 100%; padding: 10px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 8px; transition: all 0.15s; }
+.decision-btn.approve { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.decision-btn.approve:hover { background: rgba(34,197,94,0.25); }
+.decision-btn.steer { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+.decision-btn.steer:hover { background: rgba(245,158,11,0.22); }
+.decision-btn.reject { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.decision-btn.reject:hover { background: rgba(239,68,68,0.22); }
+.decision-btn small { font-size: 11px; font-weight: 400; color: var(--text3); margin-left: auto; }
+.decision-warning { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 6px; padding: 8px 10px; font-size: 11px; color: var(--text2); margin-bottom: 10px; }
+.decision-warning strong { color: var(--red); }
+
+/* ── AICOS Panel (slide-in) ── */
+.aicos-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; }
+.aicos-overlay.open { display: block; }
+.aicos-panel { position: fixed; top: 0; right: 0; width: 400px; height: 100vh; background: var(--bg1); border-left: 1px solid var(--border); z-index: 101; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.25s ease; }
+.aicos-panel.open { transform: translateX(0); }
+.aicos-panel-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.aicos-hex { width: 28px; height: 28px; background: var(--accent); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.aicos-panel-title { font-size: 14px; font-weight: 700; flex: 1; }
+.aicos-freshness { font-size: 10px; padding: 2px 7px; border-radius: 4px; background: rgba(34,197,94,0.12); color: var(--green); font-family: 'DM Mono', monospace; }
+.aicos-panel-tabs { display: flex; border-bottom: 1px solid var(--border); }
+.aicos-tab { flex: 1; padding: 9px 6px; text-align: center; font-size: 11px; font-weight: 600; cursor: pointer; color: var(--text3); border-bottom: 2px solid transparent; transition: all 0.15s; }
+.aicos-tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+.aicos-panel-body { flex: 1; overflow-y: auto; padding: 14px; }
+.aicos-section { margin-bottom: 14px; }
+.aicos-section-title { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.aicos-item { background: var(--bg3); border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; font-size: 12px; border-left: 3px solid var(--border2); }
+.aicos-item.blocker { border-left-color: var(--red); }
+.aicos-item.open-q { border-left-color: var(--amber); }
+.aicos-item.done { border-left-color: var(--green); }
+.health-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.health-card { background: var(--bg3); border-radius: 7px; padding: 10px; }
+.health-val { font-size: 22px; font-weight: 700; font-family: 'DM Mono', monospace; }
+.health-lbl { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* ── Add Task Modal ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; display: none; align-items: center; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; width: 520px; max-height: 80vh; overflow-y: auto; }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 15px; font-weight: 700; }
+.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+.form-input { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; }
+.form-input:focus { outline: none; border-color: var(--accent); }
+.zone-picker { display: flex; gap: 8px; }
+.zone-option { flex: 1; padding: 10px 8px; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; text-align: center; transition: all 0.15s; }
+.zone-option .zone-name { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+.zone-option .zone-desc { font-size: 10px; color: var(--text3); }
+.zone-option.auto-opt { border-color: var(--zone-auto-border); background: var(--zone-auto-bg); }
+.zone-option.auto-opt .zone-name { color: var(--zone-auto); }
+.zone-option.auto-opt.selected { border-color: var(--zone-auto); box-shadow: 0 0 0 2px rgba(34,197,94,0.2); }
+.zone-option.sup-opt { border-color: var(--zone-sup-border); background: var(--zone-sup-bg); }
+.zone-option.sup-opt .zone-name { color: var(--zone-sup); }
+.zone-option.sup-opt.selected { border-color: var(--zone-sup); box-shadow: 0 0 0 2px rgba(245,158,11,0.2); }
+.zone-option.gate-opt { border-color: var(--zone-gate-border); background: var(--zone-gate-bg); }
+.zone-option.gate-opt .zone-name { color: var(--zone-gate); }
+.zone-option.gate-opt.selected { border-color: var(--zone-gate); box-shadow: 0 0 0 2px rgba(239,68,68,0.2); }
+.acp-preview { background: var(--bg4); border-radius: 7px; padding: 10px 12px; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text2); border: 1px solid var(--border); }
+.acp-preview .key { color: var(--accent2); }
+.acp-preview .val { color: var(--green); }
+.modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ── shared chat msg styles ── */
+.agent-select { background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; padding: 4px 8px; color: var(--text); font-size: 11px; font-family: 'DM Sans', sans-serif; }
+.cfm-sender { font-size: 10px; font-weight: 600; color: var(--text3); }
+.cfm-sender .tool-call { font-family: 'DM Mono', monospace; color: var(--purple); }
+.cfm-body { font-size: 12px; line-height: 1.5; background: var(--bg3); border-radius: 6px; padding: 7px 9px; }
+.cfm-body.tool { background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.2); font-family: 'DM Mono', monospace; font-size: 11px; }
+.cfm-body.user { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); }
+
+/* ── Utility ── */
+.flex { display: flex; }
+.items-center { align-items: center; }
+.gap-8 { gap: 8px; }
+.ml-auto { margin-left: auto; }
+.text-sm { font-size: 12px; }
+.text-xs { font-size: 11px; }
+.text-muted { color: var(--text3); }
+.hidden { display: none !important; }
+.tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- ── Topbar ── -->
+<div class="topbar">
+  <div class="topbar-brand">agents<span>.ws</span></div>
+  <div class="topbar-sep"></div>
+  <div class="project-filter" onclick="showProjectMenu()">
+    <span class="project-dot"></span>
+    <span>agents-dashboard</span>
+    <span style="color:var(--text3);margin-left:2px">▾</span>
+  </div>
+  <div class="view-tabs">
+    <button class="view-tab active" onclick="switchView('board', this)">Board</button>
+    <button class="view-tab" onclick="switchView('queue', this)">Human Queue <span style="color:var(--red);margin-left:3px">3</span></button>
+    <button class="view-tab" onclick="switchView('timeline', this)">Timeline</button>
+    <button class="view-tab" onclick="switchView('branches', this)">Branches</button>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <button class="btn btn-ghost btn-sm" onclick="openAICOS()">⬡ AICOS</button>
+    <button class="btn btn-primary btn-sm" onclick="openAddTask()">+ New Task</button>
+  </div>
+</div>
+
+<!-- ── App ── -->
+<div class="app">
+
+  <!-- ── Sidebar ── -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-hex">⬡</div>
+      <div class="logo-text">agents.ws <small>AICOS-native</small></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Navigation</div>
+      <div class="nav-item active" onclick="switchView('board', null)"><span class="nav-icon">⊞</span> Board</div>
+      <div class="nav-item" onclick="switchView('queue', null)"><span class="nav-icon">⚡</span> Human Queue <span class="nav-badge">3</span></div>
+      <div class="nav-item" onclick="switchView('timeline', null)"><span class="nav-icon">⌛</span> Timeline</div>
+      <div class="nav-item" onclick="switchView('branches', null)"><span class="nav-icon">⑂</span> Branches <span class="nav-badge amber">2</span></div>
+      <div class="nav-item"><span class="nav-icon">◎</span> Activity</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Autonomy Budget</div>
+      <div class="autonomy-budget">
+        <div class="budget-label">68% autonomous today</div>
+        <div class="budget-bar"><div class="budget-fill"></div></div>
+        <div class="budget-pills">
+          <span class="budget-pill auto">🟢 12 auto</span>
+          <span class="budget-pill sup">🟡 5 sup</span>
+          <span class="budget-pill gate">🔴 3 gate</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Control Model</div>
+      <div class="control-model">
+        <div class="cm-row"><span class="cm-label">AICOS source</span><span class="cm-val on">● on</span></div>
+        <div class="cm-row"><span class="cm-label">OpenClaw dispatch</span><span class="cm-val on">● on</span></div>
+        <div class="cm-row"><span class="cm-label">Human gates</span><span class="cm-val on">● on</span></div>
+        <div class="cm-row"><span class="cm-label">Evidence-first</span><span class="cm-val on">● on</span></div>
+        <div class="cm-row"><span class="cm-label">Auto-branch</span><span class="cm-val on">● on</span></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:auto">
+      <div class="sidebar-label">Agents Online</div>
+      <div class="agent-pill"><span class="agent-dot online"></span><span class="agent-name">claude-code</span><span class="agent-status">working</span></div>
+      <div class="agent-pill"><span class="agent-dot online"></span><span class="agent-name">codex-gpt5</span><span class="agent-status">idle</span></div>
+      <div class="agent-pill"><span class="agent-dot busy"></span><span class="agent-name">openclaw</span><span class="agent-status">planning</span></div>
+    </div>
+  </div>
+
+  <!-- ── Main ── -->
+  <div class="main">
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-pill">
+        <span class="stat-pill-val red">3</span>
+        <span class="stat-pill-label">Decisions Needed</span>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-pill">
+        <span class="stat-pill-val blue">7</span>
+        <span class="stat-pill-label">AI Branches</span>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-pill">
+        <span class="stat-pill-val green">87%</span>
+        <span class="stat-pill-label">Confidence · Option B</span>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-pill">
+        <span class="stat-pill-val amber">~18m</span>
+        <span class="stat-pill-label">Est Review</span>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-pill">
+        <span class="stat-pill-val purple">2</span>
+        <span class="stat-pill-label">Risky Items</span>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- ── Board View ── -->
+      <div id="view-board" class="view active">
+        <div class="board-scroll">
+
+          <!-- Col 1: Goal/Scope -->
+          <div class="board-column">
+            <div class="col-header auto">
+              <span class="col-zone-dot auto"></span>
+              <span class="col-title">Goal / Scope</span>
+              <span class="col-count">2</span>
+            </div>
+            <div class="col-body">
+              <div class="col-zone-label auto">🟢 Autonomous</div>
+              <div class="card" onclick="selectCard(this, 'scope-1')">
+                <div class="card-top">
+                  <span class="card-zone-dot green"></span>
+                  <span class="card-title">Define agents-dashboard v2 scope</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p0">P0</span><span class="badge badge-research">research</span></div>
+                <div class="card-meta"><span class="card-worker">openclaw</span><span class="card-freshness fresh">fresh</span></div>
+              </div>
+              <div class="card" onclick="selectCard(this, 'scope-2')">
+                <div class="card-top">
+                  <span class="card-zone-dot green"></span>
+                  <span class="card-title">AICOS doc index analysis</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p1">P1</span><span class="badge badge-research">research</span></div>
+                <div class="card-meta"><span class="card-worker">claude-code</span><span class="card-freshness working">working</span></div>
+                <div class="card-progress"><div class="card-progress-fill" style="width:60%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Col 2: AI Planning -->
+          <div class="board-column">
+            <div class="col-header auto">
+              <span class="col-zone-dot auto"></span>
+              <span class="col-title">AI Planning</span>
+              <span class="col-count">3</span>
+            </div>
+            <div class="col-body">
+              <div class="col-zone-label auto">🟢 Autonomous</div>
+              <div class="card" onclick="selectCard(this, 'plan-1')">
+                <div class="card-top">
+                  <span class="card-zone-dot green"></span>
+                  <span class="card-title">Architecture: SwarmClaw fork plan</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p0">P0</span><span class="badge badge-code">code</span></div>
+                <div class="card-meta"><span class="card-worker">openclaw</span><span class="card-freshness fresh">fresh</span></div>
+                <div class="card-progress"><div class="card-progress-fill" style="width:85%"></div></div>
+              </div>
+              <div class="card" onclick="selectCard(this, 'plan-2')">
+                <div class="card-top">
+                  <span class="card-zone-dot yellow"></span>
+                  <span class="card-title">BFF proxy design — auth strategy</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p1">P1</span><span class="badge badge-code">code</span></div>
+                <div class="card-meta"><span class="card-worker">claude-code</span><span class="card-freshness aging">aging</span></div>
+                <div class="card-blocked">⚠ awaiting WebSocket/SSE decision</div>
+              </div>
+              <div class="card" onclick="selectCard(this, 'plan-3')">
+                <div class="card-top">
+                  <span class="card-zone-dot green"></span>
+                  <span class="card-title">AICOS plugin hook mapping</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p1">P1</span><span class="badge badge-code">code</span></div>
+                <div class="card-meta"><span class="card-worker">codex-gpt5</span><span class="card-freshness fresh">fresh</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Col 3: AI Working -->
+          <div class="board-column">
+            <div class="col-header auto">
+              <span class="col-zone-dot auto"></span>
+              <span class="col-title">AI Working</span>
+              <span class="col-count">4</span>
+            </div>
+            <div class="col-body">
+              <div class="col-zone-label auto">🟢 Autonomous</div>
+              <div class="card" onclick="selectCard(this, 'work-1')">
+                <div class="card-top">
+                  <span class="card-zone-dot green"></span>
+                  <span class="card-title">Implement AICOS context panel — Tab: Context</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p0">P0</span><span class="badge badge-code">code</span></div>
+                <div class="card-meta"><span class="card-worker">claude-code / branch-a</span><span class="card-freshness working">working</span></div>
+                <div class="card-progress"><div class="card-progress-fill" style="width:45%"></div></div>
+              </div>
+              <div class="card" onclick="selectCard(this, 'work-2')">
+                <div class="card-top">
+                  <span class="card-zone-dot green"></span>
+                  <span class="card-title">React hooks for aicos-ra data fetch</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p1">P1</span><span class="badge badge-code">code</span></div>
+                <div class="card-meta"><span class="card-worker">codex-gpt5 / branch-b</span><span class="card-freshness working">working</span></div>
+                <div class="card-progress"><div class="card-progress-fill" style="width:70%"></div></div>
+              </div>
+              <div class="card" onclick="selectCard(this, 'work-3')">
+                <div class="card-top">
+                  <span class="card-zone-dot yellow"></span>
+                  <span class="card-title">UI mockup v4.5 HTML build</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p0">P0</span><span class="badge badge-design">design</span></div>
+                <div class="card-meta"><span class="card-worker">claude-code</span><span class="card-freshness working">working</span></div>
+                <div class="card-progress"><div class="card-progress-fill" style="width:90%;background:var(--green)"></div></div>
+              </div>
+              <div class="card" onclick="selectCard(this, 'work-4')">
+                <div class="card-top">
+                  <span class="card-zone-dot green"></span>
+                  <span class="card-title">Telegram connector test harness</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p2">P2</span><span class="badge badge-code">code</span></div>
+                <div class="card-meta"><span class="card-worker">openclaw</span><span class="card-freshness fresh">fresh</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Col 4: Needs Human — GATE -->
+          <div class="board-column">
+            <div class="col-header gate">
+              <span class="col-zone-dot gate"></span>
+              <span class="col-title">Needs Human</span>
+              <span class="col-count">3</span>
+            </div>
+            <div class="col-body">
+              <div class="col-zone-label gate">🔴 Gate</div>
+              <div class="card" onclick="selectCard(this, 'gate-1')">
+                <div class="card-top">
+                  <span class="card-zone-dot red"></span>
+                  <span class="card-title">WebSocket vs SSE — transport decision</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p0">P0</span><span class="badge badge-code">code</span></div>
+                <div class="card-meta"><span class="card-worker">2 branches blocked</span><span class="card-freshness stale">stale</span></div>
+                <div class="card-blocked">⚠ 2 branches waiting • 87% SSE</div>
+              </div>
+              <div class="card" onclick="selectCard(this, 'gate-2')">
+                <div class="card-top">
+                  <span class="card-zone-dot red"></span>
+                  <span class="card-title">DB schema: UUID vs ULID for work_items</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p1">P1</span><span class="badge badge-code">code</span></div>
+                <div class="card-meta"><span class="card-worker">1 branch blocked</span><span class="card-freshness stale">stale</span></div>
+                <div class="card-blocked">⚠ migration risk flagged</div>
+              </div>
+              <div class="card" onclick="selectCard(this, 'gate-3')">
+                <div class="card-top">
+                  <span class="card-zone-dot yellow"></span>
+                  <span class="card-title">Auth token storage — review needed</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p1">P1</span><span class="badge badge-code">code</span></div>
+                <div class="card-meta"><span class="card-worker">claude-code</span><span class="card-freshness aging">aging</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Col 5: Verification -->
+          <div class="board-column">
+            <div class="col-header sup">
+              <span class="col-zone-dot sup"></span>
+              <span class="col-title">Verification</span>
+              <span class="col-count">2</span>
+            </div>
+            <div class="col-body">
+              <div class="col-zone-label sup">🟡 Supervised</div>
+              <div class="card" onclick="selectCard(this, 'ver-1')">
+                <div class="card-top">
+                  <span class="card-zone-dot yellow"></span>
+                  <span class="card-title">AICOS plugin beforeAgentStart test</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p0">P0</span><span class="badge badge-code">code</span></div>
+                <div class="card-meta"><span class="card-worker">codex-gpt5</span><span class="card-freshness fresh">fresh</span></div>
+                <div class="card-progress"><div class="card-progress-fill" style="width:80%;background:var(--amber)"></div></div>
+              </div>
+              <div class="card" onclick="selectCard(this, 'ver-2')">
+                <div class="card-top">
+                  <span class="card-zone-dot green"></span>
+                  <span class="card-title">BFF proxy — integration test suite</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-p1">P1</span><span class="badge badge-code">code</span></div>
+                <div class="card-meta"><span class="card-worker">claude-code</span><span class="card-freshness fresh">fresh</span></div>
+                <div class="card-progress"><div class="card-progress-fill" style="width:100%;background:var(--green)"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Col 6: Done/Evidence -->
+          <div class="board-column">
+            <div class="col-header" style="background:rgba(34,197,94,0.05);border-bottom-color:rgba(34,197,94,0.15)">
+              <span class="col-zone-dot" style="background:var(--green)"></span>
+              <span class="col-title">Done / Evidence</span>
+              <span class="col-count">5</span>
+            </div>
+            <div class="col-body">
+              <div class="col-zone-label" style="color:var(--green)">✓ Verified</div>
+              <div class="card" style="opacity:0.7" onclick="selectCard(this, 'done-1')">
+                <div class="card-top">
+                  <span class="card-zone-dot green"></span>
+                  <span class="card-title">SwarmClaw fork + env setup</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-code">code</span></div>
+                <div class="card-meta"><span class="card-worker">openclaw</span><span class="card-freshness fresh">fresh</span></div>
+              </div>
+              <div class="card" style="opacity:0.7" onclick="selectCard(this, 'done-2')">
+                <div class="card-top">
+                  <span class="card-zone-dot green"></span>
+                  <span class="card-title">AICOS doc import — architecture proposal</span>
+                </div>
+                <div class="card-badges"><span class="badge badge-research">research</span></div>
+                <div class="card-meta"><span class="card-worker">claude-code</span><span class="card-freshness fresh">fresh</span></div>
+              </div>
+              <div class="card" style="opacity:0.7">
+                <div class="card-top">
+                  <span class="card-zone-dot green"></span>
+                  <span class="card-title">UI mockup v1–v3</span>
+                </div>
+                <div class="card-meta"><span class="card-worker">claude-code</span><span class="card-freshness fresh">fresh</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Human Queue View ── -->
+      <div id="view-queue" class="view" style="flex-direction:column;overflow:hidden">
+        <div class="queue-header">
+          <div>
+            <div class="queue-title">⚡ Human Queue</div>
+            <div class="queue-subtitle">3 decisions blocking AI progress — estimated 18 min review</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-left:auto">Sort by urgency</button>
+        </div>
+        <div class="queue-list">
+
+          <div class="queue-row urgent" onclick="selectQueue(this, 'gate-1')">
+            <div class="queue-left">
+              <div class="queue-decision-title">Transport layer: WebSocket vs SSE for real-time agent updates</div>
+              <div class="queue-meta">
+                <span class="queue-tag gate">🔴 Gate</span>
+                <span class="text-xs text-muted">ID: gate-001 · agents-dashboard</span>
+              </div>
+              <div class="queue-blocked">Blocking <strong>2 branches</strong>: branch-a (AICOS panel), branch-b (React hooks)</div>
+            </div>
+            <div class="queue-right">
+              <span class="confidence-badge conf-high">87%</span>
+              <div class="queue-rec">AI recommends: <strong>SSE</strong></div>
+              <div class="queue-rec" style="font-size:10px;color:var(--text3)">simpler, 1-way push, works with HTTP/2</div>
+            </div>
+          </div>
+
+          <div class="queue-row urgent" onclick="selectQueue(this, 'gate-2')">
+            <div class="queue-left">
+              <div class="queue-decision-title">DB schema: UUID vs ULID for work_items primary key</div>
+              <div class="queue-meta">
+                <span class="queue-tag gate">🔴 Gate</span>
+                <span class="text-xs text-muted">ID: gate-002 · agents-dashboard</span>
+              </div>
+              <div class="queue-blocked">Blocking <strong>1 branch</strong>: schema-migration — migration risk flagged</div>
+            </div>
+            <div class="queue-right">
+              <span class="confidence-badge conf-med">72%</span>
+              <div class="queue-rec">AI recommends: <strong>ULID</strong></div>
+              <div class="queue-rec" style="font-size:10px;color:var(--text3)">sortable, no lock contention</div>
+            </div>
+          </div>
+
+          <div class="queue-row" onclick="selectQueue(this, 'gate-3')">
+            <div class="queue-left">
+              <div class="queue-decision-title">Auth token storage: memory-only vs httpOnly cookie</div>
+              <div class="queue-meta">
+                <span class="queue-tag sup">🟡 Supervised</span>
+                <span class="text-xs text-muted">ID: sup-001 · agents-dashboard</span>
+              </div>
+              <div class="queue-blocked">Blocking <strong>1 task</strong>: BFF proxy auth implementation</div>
+            </div>
+            <div class="queue-right">
+              <span class="confidence-badge conf-high">91%</span>
+              <div class="queue-rec">AI recommends: <strong>httpOnly cookie</strong></div>
+              <div class="queue-rec" style="font-size:10px;color:var(--text3)">XSS safe, works with SSR</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Timeline View ── -->
+      <div id="view-timeline" class="view" style="flex-direction:column;overflow:hidden">
+        <div class="timeline-container">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px">Timeline — agents-dashboard sprint</div>
+          <div class="timeline-header">
+            <div class="tl-day">May 1</div><div class="tl-day">May 2</div><div class="tl-day">May 3</div>
+            <div class="tl-day">May 4</div><div class="tl-day">May 5</div><div class="tl-day">May 6</div><div class="tl-day">May 7</div>
+          </div>
+          <div class="swimlane">
+            <div class="swimlane-label">Human Decisions</div>
+            <div class="swimlane-track">
+              <div class="tl-block tl-human" style="left:2%;width:10%">Gate: transport</div>
+              <div class="tl-block tl-human" style="left:14%;width:8%">Gate: schema</div>
+              <div class="tl-block tl-human" style="left:50%;width:8%">Gate: auth</div>
+            </div>
+          </div>
+          <div class="swimlane">
+            <div class="swimlane-label">AI Planning</div>
+            <div class="swimlane-track">
+              <div class="tl-block tl-plan" style="left:0%;width:25%">SwarmClaw arch plan</div>
+              <div class="tl-block tl-plan" style="left:28%;width:18%">AICOS plugin design</div>
+            </div>
+          </div>
+          <div class="swimlane">
+            <div class="swimlane-label">Branch A</div>
+            <div class="swimlane-track">
+              <div class="tl-block tl-branch-a" style="left:26%;width:30%">AICOS context panel</div>
+              <div class="tl-block" style="left:58%;width:5%;background:rgba(239,68,68,0.2);color:var(--red);border:1px solid rgba(239,68,68,0.4)">⚠ blocked</div>
+            </div>
+          </div>
+          <div class="swimlane">
+            <div class="swimlane-label">Branch B</div>
+            <div class="swimlane-track">
+              <div class="tl-block tl-branch-b" style="left:30%;width:28%">React hooks + data fetch</div>
+              <div class="tl-block" style="left:60%;width:5%;background:rgba(239,68,68,0.2);color:var(--red);border:1px solid rgba(239,68,68,0.4)">⚠ blocked</div>
+            </div>
+          </div>
+          <div class="swimlane">
+            <div class="swimlane-label">Verification</div>
+            <div class="swimlane-track">
+              <div class="tl-block tl-verify" style="left:15%;width:18%">BFF integration tests</div>
+              <div class="tl-block tl-verify" style="left:65%;width:20%">Plugin test suite</div>
+            </div>
+          </div>
+          <div class="swimlane">
+            <div class="swimlane-label">Done</div>
+            <div class="swimlane-track">
+              <div class="tl-block tl-done" style="left:0%;width:15%">SwarmClaw fork</div>
+              <div class="tl-block tl-done" style="left:17%;width:12%">Doc import</div>
+              <div class="tl-block tl-done" style="left:31%;width:10%">Mockup v1-v3</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Branches View ── -->
+      <div id="view-branches" class="view" style="flex-direction:column;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg1);font-size:14px;font-weight:600;flex-shrink:0">⑂ Active Branches</div>
+        <div class="branches-list">
+          <div class="branch-card blocked">
+            <div class="branch-top">
+              <span class="branch-name">branch-a / aicos-context-panel</span>
+              <span class="branch-status bstatus-blocked">BLOCKED</span>
+            </div>
+            <div class="branch-meta">
+              <div class="branch-meta-item"><div class="branch-meta-label">Agent</div><div class="branch-meta-val">claude-code</div></div>
+              <div class="branch-meta-item"><div class="branch-meta-label">Progress</div><div class="branch-meta-val">45%</div></div>
+              <div class="branch-meta-item"><div class="branch-meta-label">Started</div><div class="branch-meta-val">May 2</div></div>
+              <div class="branch-meta-item"><div class="branch-meta-label">Commits</div><div class="branch-meta-val">8</div></div>
+            </div>
+            <div class="blocked-by">🔴 Blocked by gate-001: WebSocket vs SSE decision needed before implementing real-time updates</div>
+          </div>
+          <div class="branch-card blocked">
+            <div class="branch-top">
+              <span class="branch-name">branch-b / react-hooks-aicos</span>
+              <span class="branch-status bstatus-blocked">BLOCKED</span>
+            </div>
+            <div class="branch-meta">
+              <div class="branch-meta-item"><div class="branch-meta-label">Agent</div><div class="branch-meta-val">codex-gpt5</div></div>
+              <div class="branch-meta-item"><div class="branch-meta-label">Progress</div><div class="branch-meta-val">70%</div></div>
+              <div class="branch-meta-item"><div class="branch-meta-label">Started</div><div class="branch-meta-val">May 2</div></div>
+              <div class="branch-meta-item"><div class="branch-meta-label">Commits</div><div class="branch-meta-val">12</div></div>
+            </div>
+            <div class="blocked-by">🔴 Blocked by gate-001: transport choice affects useRealtimeAgent hook interface</div>
+          </div>
+          <div class="branch-card">
+            <div class="branch-top">
+              <span class="branch-name">branch-c / telegram-connector</span>
+              <span class="branch-status bstatus-running">RUNNING</span>
+            </div>
+            <div class="branch-meta">
+              <div class="branch-meta-item"><div class="branch-meta-label">Agent</div><div class="branch-meta-val">openclaw</div></div>
+              <div class="branch-meta-item"><div class="branch-meta-label">Progress</div><div class="branch-meta-val">30%</div></div>
+              <div class="branch-meta-item"><div class="branch-meta-label">Started</div><div class="branch-meta-val">May 2</div></div>
+              <div class="branch-meta-item"><div class="branch-meta-label">Commits</div><div class="branch-meta-val">3</div></div>
+            </div>
+          </div>
+          <div class="branch-card">
+            <div class="branch-top">
+              <span class="branch-name">branch-d / schema-migration</span>
+              <span class="branch-status bstatus-waiting">WAITING</span>
+            </div>
+            <div class="branch-meta">
+              <div class="branch-meta-item"><div class="branch-meta-label">Agent</div><div class="branch-meta-val">claude-code</div></div>
+              <div class="branch-meta-item"><div class="branch-meta-label">Progress</div><div class="branch-meta-val">0%</div></div>
+              <div class="branch-meta-item"><div class="branch-meta-label">Started</div><div class="branch-meta-val">—</div></div>
+              <div class="branch-meta-item"><div class="branch-meta-label">Commits</div><div class="branch-meta-val">0</div></div>
+            </div>
+            <div class="blocked-by" style="border-color:rgba(245,158,11,0.3);color:var(--amber);background:rgba(245,158,11,0.06)">🟡 Waiting on gate-002: UUID vs ULID decision before schema design starts</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Right Panel: Workspace + Chat ── -->
+  <div class="right-panel" id="rightPanel">
+  <!-- 2 top-level tabs -->
+  <div class="rp-toptabs">
+    <div class="rp-toptab active" id="rptab-ws-btn" onclick="switchRPTop('workspace',this)">⚡ Workspace</div>
+    <div class="rp-toptab" id="rptab-chat-btn" onclick="switchRPTop('chat',this)">💬 Chat</div>
+    <button class="rp-close-btn" onclick="closeRightPanel()">×</button>
+  </div>
+
+  <!-- ── Tab: Workspace ── -->
+  <div id="rptab-workspace" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <!-- Empty state (no card selected) -->
+    <div id="rpEmpty" class="rp-empty">
+      <span style="font-size:36px;opacity:0.4">⊞</span>
+      <div style="font-size:13px;font-weight:600">No task selected</div>
+      <div style="font-size:11px">Click any card or queue item</div>
+    </div>
+    <!-- Task content (hidden until card clicked) -->
+    <div id="rpTaskContent" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <!-- Task header -->
+      <div class="rp-task-header">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+          <div class="rp-task-title" id="rpTitle">gate-001</div>
+          <span class="confidence-badge conf-high" id="rpConf">87%</span>
+        </div>
+        <div class="rp-task-sub" id="rpSub">WebSocket vs SSE · 2 branches blocked</div>
+      </div>
+      <!-- Sub-tabs -->
+      <div class="rp-subtabs">
+        <div class="rp-subtab active" onclick="switchRPSub('overview',this)">Overview</div>
+        <div class="rp-subtab" onclick="switchRPSub('evidence',this)">Evidence</div>
+        <div class="rp-subtab" onclick="switchRPSub('decision',this)">Decision</div>
+      </div>
+      <!-- Sub-tab content -->
+      <div id="rpst-overview" class="rp-subtab-content">
+        <div class="panel-section">
+          <div class="panel-section-title">AI Recommendation</div>
+          <div class="rec-box">
+            <div class="rec-label">✓ Recommended: Option B — SSE</div>
+            <div class="rec-text">SSE is simpler, unidirectional, HTTP/2 native. For read-only agent telemetry push, eliminates WebSocket handshake overhead. BFF (Hono) has built-in SSE support.</div>
+          </div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">Alternatives</div>
+          <div class="alt-item">
+            <div class="alt-letter" style="background:rgba(99,102,241,0.2);color:var(--accent2)">A</div>
+            <div class="alt-content"><div class="alt-title">WebSocket</div><div class="alt-desc">Full duplex. Needed if agent gets commands mid-run. 62% confidence.</div></div>
+          </div>
+          <div class="alt-item" style="border:1px solid rgba(34,197,94,0.25)">
+            <div class="alt-letter" style="background:rgba(34,197,94,0.2);color:var(--green)">B</div>
+            <div class="alt-content"><div class="alt-title">SSE ← AI pick</div><div class="alt-desc">Simple, HTTP/2, auto-reconnect. 87% confidence.</div></div>
+          </div>
+          <div class="alt-item">
+            <div class="alt-letter">C</div>
+            <div class="alt-content"><div class="alt-title">Polling</div><div class="alt-desc">Simplest, highest latency. Not for live telemetry.</div></div>
+          </div>
+        </div>
+      </div>
+      <div id="rpst-evidence" class="rp-subtab-content hidden">
+        <div class="panel-section">
+          <div class="panel-section-title">AICOS Evidence</div>
+          <div class="evidence-item"><div class="evidence-icon">📄</div><div><div class="evidence-text">SwarmClaw v1.6 uses SSE for live task streaming</div><div class="evidence-source">canonical/architecture/swarmclaw-aicos-proposal-v1.md</div></div></div>
+          <div class="evidence-item"><div class="evidence-icon">📊</div><div><div class="evidence-text">HTTP/2 removes 6-connection SSE limit from HTTP/1.1</div><div class="evidence-source">research · web-transport-analysis</div></div></div>
+          <div class="evidence-item"><div class="evidence-icon">⚙</div><div><div class="evidence-text">Hono <code style="font-family:'DM Mono',monospace;font-size:10px">streamSSE()</code> — zero extra deps</div><div class="evidence-source">working/design/bff-proxy-v1</div></div></div>
+          <div class="evidence-item" style="border-left-color:var(--amber)"><div class="evidence-icon">⚠</div><div><div class="evidence-text">WS needed only if agent interrupt mid-run (out of scope)</div><div class="evidence-source">status/open-questions</div></div></div>
+        </div>
+      </div>
+      <div id="rpst-decision" class="rp-subtab-content hidden">
+        <div class="decision-warning"><strong>Note:</strong> Chat with agents in Discussion before deciding.</div>
+        <div class="decision-actions">
+          <button class="decision-btn approve" onclick="makeDecision('approve')">✓ Approve — SSE<small>unblocks 2 branches</small></button>
+          <button class="decision-btn steer" onclick="makeDecision('steer')">↻ Steer — add constraints<small>modify recommendation</small></button>
+          <button class="decision-btn reject" onclick="makeDecision('reject')">✕ Reject — WebSocket<small>override AI pick</small></button>
+        </div>
+        <div style="margin-top:12px">
+          <div class="panel-section-title">Decision note</div>
+          <textarea class="form-input" rows="3" style="width:100%;resize:none;margin-top:6px" placeholder="Reasoning... (written to AICOS)"></textarea>
+        </div>
+      </div>
+      <!-- Discussion — task-scoped chat, always pinned bottom -->
+      <div class="rp-disc">
+        <div class="rp-disc-label">
+          💬 Discussion
+          <span style="font-size:10px;color:var(--text3);margin-left:auto;font-family:'DM Mono',monospace" id="rpDiscScope">gate-001</span>
+        </div>
+        <div class="rp-disc-feed" id="discussionChat">
+          <div class="chat-msg">
+            <div class="chat-avatar avatar-ai">⬡</div>
+            <div class="chat-bubble">
+              <div class="chat-sender"><span class="agent-tag">openclaw</span></div>
+              <div class="chat-text">I recommend SSE — read-only push, lower complexity, Hono has native support. What concerns you?</div>
+            </div>
+          </div>
+          <div class="chat-msg">
+            <div class="chat-avatar avatar-ai" style="background:rgba(168,85,247,0.2);border-color:rgba(168,85,247,0.3)">⚙</div>
+            <div class="chat-bubble">
+              <div class="chat-sender"><span class="agent-tag" style="background:rgba(168,85,247,0.15);color:var(--purple)">claude-code</span></div>
+              <div class="chat-text">Branch-a blocked here. Both interfaces stubbed. SSE ~40 LOC vs WS ~120 LOC. Ready when you decide.</div>
+            </div>
+          </div>
+        </div>
+        <div class="rp-disc-bottom">
+          <div class="quick-prompts" style="margin:0">
+            <div class="quick-btn" onclick="addQuickPrompt('Rủi ro SSE?')">Rủi ro?</div>
+            <div class="quick-btn" onclick="addQuickPrompt('So sánh latency?')">So sánh</div>
+            <div class="quick-btn" onclick="addQuickPrompt('Challenge recommendation')">Challenge</div>
+          </div>
+          <div class="chat-input-wrap">
+            <textarea class="chat-input" id="discussionInput" rows="2" placeholder="Challenge or ask agents..."></textarea>
+            <button class="btn btn-primary btn-sm" onclick="sendDiscussion()" style="align-self:flex-end">→</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tab: Chat (general session) ── -->
+  <div id="rptab-chat" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+    <div class="rp-chat-banner">⬡ AICOS · projects/agents-dashboard · 7 work items · session persists</div>
+    <div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <span style="font-size:11px;color:var(--text3)">Agent:</span>
+      <select class="agent-select">
+        <option>openclaw</option>
+        <option>claude-code</option>
+        <option>codex-gpt5</option>
+      </select>
+    </div>
+    <div class="rp-chat-feed">
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div class="cfm-sender">openclaw</div>
+        <div class="cfm-body">Ready. 3 gate decisions blocking progress. What do you want to work on?</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div class="cfm-sender">you</div>
+        <div class="cfm-body user">What's the current status of branch-a?</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div class="cfm-sender"><span class="tool-call">aicos_get_work_items</span></div>
+        <div class="cfm-body tool">scope: projects/agents-dashboard<br>filter: branch=branch-a</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div class="cfm-sender">openclaw</div>
+        <div class="cfm-body">Branch-a 45% done, blocked on gate-001 — WebSocket vs SSE. Both interfaces stubbed. Check Human Queue to unblock.</div>
+      </div>
+    </div>
+    <div class="rp-chat-input">
+      <input type="text" placeholder="Ask agents..." onkeydown="if(event.key==='Enter')chatSend(this)">
+      <button class="btn btn-primary btn-sm" onclick="chatSend(this.previousElementSibling)">→</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /.app -->
+
+<!-- ── AICOS Slide-in Panel ── -->
+<div class="aicos-overlay" id="aicosOverlay" onclick="closeAICOS()"></div>
+<div class="aicos-panel" id="aicosPanel">
+  <div class="aicos-panel-header">
+    <div class="aicos-hex">⬡</div>
+    <div class="aicos-panel-title">AICOS Context</div>
+    <span class="aicos-freshness">fresh</span>
+    <button onclick="closeAICOS()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;margin-left:8px">×</button>
+  </div>
+  <div class="aicos-panel-tabs">
+    <div class="aicos-tab active" onclick="switchAICOSTab('context', this)">Context</div>
+    <div class="aicos-tab" onclick="switchAICOSTab('handoff', this)">Handoff</div>
+    <div class="aicos-tab" onclick="switchAICOSTab('docs', this)">Docs</div>
+    <div class="aicos-tab" onclick="switchAICOSTab('health', this)">Health</div>
+  </div>
+  <div class="aicos-panel-body">
+
+    <!-- Context tab -->
+    <div id="atab-context">
+      <div class="aicos-section">
+        <div class="aicos-section-title">Current State</div>
+        <div style="font-size:12px;line-height:1.6;color:var(--text2);background:var(--bg3);padding:10px;border-radius:7px">
+          Building agents-dashboard v2 with SwarmClaw fork + AICOS plugin. Architecture proposal approved. Currently in active implementation phase with 3 parallel branches. 2 branches blocked on gate decisions.
+        </div>
+      </div>
+      <div class="aicos-section">
+        <div class="aicos-section-title">Active Blockers</div>
+        <div class="aicos-item blocker">🔴 gate-001: WebSocket vs SSE — blocking 2 branches</div>
+        <div class="aicos-item blocker">🔴 gate-002: UUID vs ULID — blocking schema migration</div>
+        <div class="aicos-item open-q">🟡 Auth token storage strategy not decided</div>
+      </div>
+      <div class="aicos-section">
+        <div class="aicos-section-title">Active Work Items (7)</div>
+        <div class="aicos-item done">✓ SwarmClaw fork + setup</div>
+        <div class="aicos-item done">✓ Architecture proposal canonical</div>
+        <div class="aicos-item" style="border-left-color:var(--blue)">⚙ AICOS context panel — branch-a — 45%</div>
+        <div class="aicos-item" style="border-left-color:var(--blue)">⚙ React hooks — branch-b — 70%</div>
+        <div class="aicos-item" style="border-left-color:var(--accent)">⊞ Telegram connector — branch-c — 30%</div>
+      </div>
+    </div>
+
+    <!-- Handoff tab (hidden) -->
+    <div id="atab-handoff" class="hidden">
+      <div class="aicos-section">
+        <div class="aicos-section-title">Summary</div>
+        <div style="font-size:12px;line-height:1.6;color:var(--text2);background:var(--bg3);padding:10px;border-radius:7px">
+          SwarmClaw fork is running at localhost:3000. AICOS plugin scaffold created with <code style="font-family:'DM Mono',monospace">beforeAgentStart</code> and <code style="font-family:'DM Mono',monospace">afterAgentComplete</code> hooks. UI mockup v1–v4 done. v4.5 shipped.
+        </div>
+      </div>
+      <div class="aicos-section">
+        <div class="aicos-section-title">What is Done</div>
+        <div class="aicos-item done">SwarmClaw fork, docker compose running</div>
+        <div class="aicos-item done">AICOS plugin scaffold (200 LOC)</div>
+        <div class="aicos-item done">BFF proxy integration tests passing</div>
+        <div class="aicos-item done">UI mockup v1, v2, v3 shipped</div>
+      </div>
+      <div class="aicos-section">
+        <div class="aicos-section-title">Next Steps</div>
+        <div class="aicos-item open-q">Resolve gate-001 (SSE vs WS) → unblocks branch-a, branch-b</div>
+        <div class="aicos-item open-q">Complete AICOS context panel 4 tabs</div>
+        <div class="aicos-item open-q">Wire AICOSPanel into SwarmClaw topbar</div>
+      </div>
+    </div>
+
+    <!-- Docs tab (hidden) -->
+    <div id="atab-docs" class="hidden">
+      <div class="aicos-section">
+        <div class="aicos-section-title">Document Store — projects/agents-dashboard</div>
+        <div class="aicos-item" style="cursor:pointer;border-left-color:var(--accent)">
+          <div style="font-size:11px;font-weight:600">Architecture Proposal — SwarmClaw + AICOS v1</div>
+          <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">canonical/architecture/swarmclaw-aicos-proposal-v1.md</div>
+        </div>
+        <div class="aicos-item" style="cursor:pointer;border-left-color:var(--cyan)">
+          <div style="font-size:11px;font-weight:600">UI Mockup v1.0</div>
+          <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">working/design/ui-mockup-v1.md</div>
+        </div>
+        <div class="aicos-item" style="cursor:pointer;border-left-color:var(--amber)">
+          <div style="font-size:11px;font-weight:600">Build vs Reuse Analysis</div>
+          <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">canonical/architecture/build-vs-reuse-v1.md</div>
+        </div>
+        <div class="aicos-item" style="cursor:pointer">
+          <div style="font-size:11px;font-weight:600">BFF Proxy Design v1</div>
+          <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">working/design/bff-proxy-v1.md</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Health tab (hidden) -->
+    <div id="atab-health" class="hidden">
+      <div class="aicos-section">
+        <div class="aicos-section-title">Project Health</div>
+        <div class="health-grid">
+          <div class="health-card"><div class="health-val" style="color:var(--green)">12</div><div class="health-lbl">Work items</div></div>
+          <div class="health-card"><div class="health-val" style="color:var(--blue)">3</div><div class="health-lbl">Active agents</div></div>
+          <div class="health-card"><div class="health-val" style="color:var(--red)">2</div><div class="health-lbl">Blockers</div></div>
+          <div class="health-card"><div class="health-val" style="color:var(--amber)">3</div><div class="health-lbl">Open questions</div></div>
+        </div>
+      </div>
+      <div class="aicos-section" style="margin-top:12px">
+        <div class="aicos-section-title">Context Freshness</div>
+        <div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--bg3);border-radius:7px">
+          <span style="font-size:20px">🟢</span>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--green)">Fresh</div>
+            <div style="font-size:11px;color:var(--text3)">Last updated 14 min ago · aicos-ra healthy</div>
+          </div>
+        </div>
+      </div>
+      <div class="aicos-section">
+        <div class="aicos-section-title">MCP Runtime</div>
+        <div class="cm-row" style="margin-bottom:4px"><span class="cm-label" style="font-size:12px">aicos-ra</span><span class="cm-val on" style="font-size:12px">● online</span></div>
+        <div class="cm-row"><span class="cm-label" style="font-size:12px">railway runtime</span><span class="cm-val on" style="font-size:12px">● healthy</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Add Task Modal ── -->
+<div class="modal-overlay" id="addTaskModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">+ New Task</div>
+      <button onclick="closeAddTask()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="form-label">Task title</div>
+        <input class="form-input" type="text" placeholder="What needs to be done?">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Assign to agent</div>
+        <select class="form-input">
+          <option>claude-code</option>
+          <option>codex-gpt5</option>
+          <option>openclaw</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Autonomy Zone</div>
+        <div class="zone-picker">
+          <div class="zone-option auto-opt" onclick="selectZone('auto', this)">
+            <div style="font-size:18px;margin-bottom:4px">🟢</div>
+            <div class="zone-name">Autonomous</div>
+            <div class="zone-desc">AI decides + acts freely</div>
+          </div>
+          <div class="zone-option sup-opt selected" onclick="selectZone('sup', this)">
+            <div style="font-size:18px;margin-bottom:4px">🟡</div>
+            <div class="zone-name">Supervised</div>
+            <div class="zone-desc">AI acts, human reviews</div>
+          </div>
+          <div class="zone-option gate-opt" onclick="selectZone('gate', this)">
+            <div style="font-size:18px;margin-bottom:4px">🔴</div>
+            <div class="zone-name">Gate</div>
+            <div class="zone-desc">AI plans, human decides</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">ACP Preview</div>
+        <div class="acp-preview" id="acpPreview">
+<span class="key">autonomy_zone</span>: <span class="val">"supervised"</span>
+<span class="key">human_gate</span>: <span class="val">false</span>
+<span class="key">auto_branch</span>: <span class="val">true</span>
+<span class="key">requires_approval</span>: <span class="val">false</span>
+<span class="key">evidence_required</span>: <span class="val">true</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeAddTask()">Cancel</button>
+      <button class="btn btn-primary">Create Task</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// View switching
+function switchView(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const v = document.getElementById('view-' + name);
+  if (v) v.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+
+// AICOS panel tabs
+function switchAICOSTab(name, btn) {
+  document.querySelectorAll('[id^="atab-"]').forEach(t => t.classList.add('hidden'));
+  document.querySelectorAll('.aicos-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('atab-' + name).classList.remove('hidden');
+  btn.classList.add('active');
+}
+
+// AICOS slide-in
+function openAICOS() {
+  document.getElementById('aicosOverlay').classList.add('open');
+  document.getElementById('aicosPanel').classList.add('open');
+}
+function closeAICOS() {
+  document.getElementById('aicosOverlay').classList.remove('open');
+  document.getElementById('aicosPanel').classList.remove('open');
+}
+
+// Add task modal
+function openAddTask() { document.getElementById('addTaskModal').classList.add('open'); }
+function closeAddTask() { document.getElementById('addTaskModal').classList.remove('open'); }
+
+// Right panel — 2 top-level tabs
+function switchRPTop(name, btn) {
+  document.getElementById('rptab-workspace').style.display = 'none';
+  document.getElementById('rptab-chat').style.display = 'none';
+  document.querySelectorAll('.rp-toptab').forEach(t => t.classList.remove('active'));
+  document.getElementById('rptab-' + name).style.display = 'flex';
+  btn.classList.add('active');
+}
+function switchRPSub(name, btn) {
+  document.querySelectorAll('[id^="rpst-"]').forEach(t => t.classList.add('hidden'));
+  document.querySelectorAll('.rp-subtab').forEach(t => t.classList.remove('active'));
+  document.getElementById('rpst-' + name).classList.remove('hidden');
+  btn.classList.add('active');
+}
+function openRightPanel(id) {
+  // switch to workspace tab
+  document.getElementById('rptab-workspace').style.display = 'flex';
+  document.getElementById('rptab-chat').style.display = 'none';
+  document.querySelectorAll('.rp-toptab').forEach(t => t.classList.remove('active'));
+  document.getElementById('rptab-ws-btn').classList.add('active');
+  // update content
+  const info = cardTitles[id] || [id, ''];
+  document.getElementById('rpTitle').textContent = info[0];
+  document.getElementById('rpSub').textContent = info[1];
+  document.getElementById('rpDiscScope').textContent = info[0].split('·')[0].trim();
+  document.getElementById('rpEmpty').style.display = 'none';
+  document.getElementById('rpTaskContent').style.display = 'flex';
+  // reset subtab to overview
+  document.querySelectorAll('[id^="rpst-"]').forEach(t => t.classList.add('hidden'));
+  document.querySelectorAll('.rp-subtab').forEach(t => t.classList.remove('active'));
+  document.getElementById('rpst-overview').classList.remove('hidden');
+  document.querySelector('.rp-subtab').classList.add('active');
+}
+function closeRightPanel() {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.queue-row').forEach(r => r.classList.remove('selected'));
+  document.getElementById('rpEmpty').style.display = 'flex';
+  document.getElementById('rpTaskContent').style.display = 'none';
+}
+
+// Card / queue select
+const cardTitles = {
+  'gate-1': ['gate-001 · WebSocket vs SSE', '2 branches blocked · transport decision'],
+  'gate-2': ['gate-002 · UUID vs ULID', 'DB schema · migration risk'],
+  'gate-3': ['sup-001 · Auth token storage', 'httpOnly cookie vs memory'],
+  'scope-1': ['scope-001 · Dashboard v2 scope', 'Goal definition'],
+  'scope-2': ['scope-002 · AICOS doc index', 'Research task'],
+  'plan-1': ['plan-001 · SwarmClaw fork plan', 'Architecture · AI Planning'],
+  'plan-2': ['plan-002 · BFF proxy design', 'Blocked: transport decision open'],
+  'plan-3': ['plan-003 · AICOS plugin hooks', 'AI Planning'],
+  'work-1': ['work-001 · AICOS context panel', 'Branch-a · 45% done'],
+  'work-2': ['work-002 · React hooks', 'Branch-b · 70% done'],
+  'work-3': ['work-003 · UI mockup v4.5', 'Design · completed'],
+  'work-4': ['work-004 · Telegram connector', 'Branch-c · 30% done'],
+  'ver-1': ['ver-001 · Plugin test suite', 'Verification · 80%'],
+  'ver-2': ['ver-002 · BFF integration tests', 'Verification · complete'],
+  'done-1': ['done-001 · SwarmClaw setup', 'Done / Evidence'],
+  'done-2': ['done-002 · AICOS doc import', 'Done / Evidence'],
+};
+function selectCard(el, id) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  openRightPanel(id);
+}
+function selectQueue(el, id) {
+  document.querySelectorAll('.queue-row').forEach(r => r.classList.remove('selected'));
+  el.classList.add('selected');
+  openRightPanel(id);
+}
+// stub for removed modal
+function closeDWModal() {}
+
+// Zone picker
+const acpMap = {
+  auto: `<span class="key">autonomy_zone</span>: <span class="val">"autonomous"</span>\n<span class="key">human_gate</span>: <span class="val">false</span>\n<span class="key">auto_branch</span>: <span class="val">true</span>\n<span class="key">requires_approval</span>: <span class="val">false</span>\n<span class="key">evidence_required</span>: <span class="val">false</span>`,
+  sup: `<span class="key">autonomy_zone</span>: <span class="val">"supervised"</span>\n<span class="key">human_gate</span>: <span class="val">false</span>\n<span class="key">auto_branch</span>: <span class="val">true</span>\n<span class="key">requires_approval</span>: <span class="val">false</span>\n<span class="key">evidence_required</span>: <span class="val">true</span>`,
+  gate: `<span class="key">autonomy_zone</span>: <span class="val">"gate"</span>\n<span class="key">human_gate</span>: <span class="val">true</span>\n<span class="key">auto_branch</span>: <span class="val">false</span>\n<span class="key">requires_approval</span>: <span class="val">true</span>\n<span class="key">evidence_required</span>: <span class="val">true</span>`
+};
+function selectZone(zone, el) {
+  document.querySelectorAll('.zone-option').forEach(z => z.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('acpPreview').innerHTML = acpMap[zone];
+}
+
+// Decision
+function makeDecision(type) {
+  const msgs = {
+    approve: '✓ Decision recorded: SSE approved. Writing to AICOS... Unblocking branch-a and branch-b.',
+    steer: '↻ Steering mode: add your constraints in the note field, then confirm.',
+    reject: '✕ WebSocket selected. AICOS updated. branches will re-plan with WebSocket interface.'
+  };
+  alert(msgs[type]);
+}
+
+// Discussion chat
+function addQuickPrompt(text) {
+  document.getElementById('discussionInput').value = text;
+}
+function sendDiscussion() {
+  const input = document.getElementById('discussionInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const chat = document.getElementById('discussionChat');
+  const msg = document.createElement('div');
+  msg.className = 'chat-msg';
+  msg.innerHTML = `<div class="chat-avatar avatar-human">M</div><div class="chat-bubble"><div class="chat-sender">You</div><div class="chat-text">${text}</div></div>`;
+  chat.appendChild(msg);
+  input.value = '';
+  setTimeout(() => {
+    const reply = document.createElement('div');
+    reply.className = 'chat-msg';
+    reply.innerHTML = `<div class="chat-avatar avatar-ai">⬡</div><div class="chat-bubble"><div class="chat-sender"><span class="agent-tag">openclaw</span> AI Analyst</div><div class="chat-text">Good question. Let me pull the relevant evidence from AICOS context... The key consideration is that SSE uses standard HTTP semantics, making it compatible with any existing middleware. If you need bidirectional control later, we can add a separate command channel via POST — which is arguably cleaner than mixing concerns in WebSocket.</div></div>`;
+    chat.appendChild(reply);
+    chat.scrollTop = chat.scrollHeight;
+  }, 800);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// Mini chat
+function chatSend(input) {
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+}
+
+// Project menu
+function showProjectMenu() {
+  alert('Project filter: workspace-level\n\n• agents-dashboard (current)\n• btc-trading-fw\n• mjnclaw-lab\n• aicos-pub');
+}
+</script>
+</body>
+</html>
